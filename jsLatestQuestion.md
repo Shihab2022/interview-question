@@ -1573,3 +1573,1283 @@ console.log(proxyUser.city); // Output: "Property 'city' does not exist!"
 4. **Negative Array Indexing:** Wraps arrays to allow negative offsets like `arr[-1]`.
 
 **[⬆ Back to Top](#table-of-contents)**
+
+### 37. What are Promises and how do .then, .catch, .finally, .resolve, and chaining work
+
+A **Promise** represents the eventual completion or failure of an asynchronous operation and its resulting value.
+
+- **`Promise.resolve(value)`**: Creates a Promise that is immediately fulfilled with the given value.
+- **`.then(onFulfilled)`**: Attaches a callback for when the promise resolves. Returns a **new Promise**, allowing chaining.
+- **`.catch(onRejected)`**: Attaches a callback for error handling anywhere in the chain.
+- **`.finally(onFinally)`**: Executes cleanup code regardless of whether the promise succeeded or failed.
+
+```javascript
+// Quick resolution
+const resolvedPromise = Promise.resolve("Initial Data");
+
+resolvedPromise
+  .then((data) => {
+    console.log("Step 1:", data);
+    return "Processed Data"; // Automatically wrapped in a resolved promise
+  })
+  .then((result) => {
+    console.log("Step 2:", result);
+    throw new Error("Something went wrong!"); // Trigger rejection
+  })
+  .catch((err) => {
+    console.error("Caught Error:", err.message);
+  })
+  .finally(() => {
+    console.log("Operation complete (Cleanup)");
+  });
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 38. What is Callback Hell and how do you fix it
+
+**Callback Hell** (also called the _Pyramid of Doom_) occurs when asynchronous operations are nested within callbacks inside other callbacks. This makes code extremely difficult to read, maintain, and debug.
+
+```javascript
+// ❌ Callback Hell (Pyramid of Doom)
+getUser(1, function (user) {
+  getOrders(user.id, function (orders) {
+    getPayment(orders[0].id, function (payment) {
+      sendEmail(user.email, payment.amount, function (response) {
+        console.log("Notification sent!");
+      });
+    });
+  });
+});
+
+// ✅ Modern Fix using Async / Await
+async function processOrder() {
+  try {
+    const user = await getUser(1);
+    const orders = await getOrders(user.id);
+    const payment = await getPayment(orders[0].id);
+    await sendEmail(user.email, payment.amount);
+    console.log("Notification sent!");
+  } catch (error) {
+    console.error("Error processing order:", error);
+  }
+}
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 39. How do Asynchronous Operations and Microtask Queue priority work
+
+JavaScript handles **asynchronous operations** via Web APIs (in browsers) or C++ APIs (in Node.js). Once completed, their callbacks are placed in queues monitored by the **Event Loop**:
+
+1. **Microtask Queue:** High priority (`Promises`, `queueMicrotask`, `MutationObserver`).
+2. **Macrotask Queue (Task Queue):** Normal priority (`setTimeout`, `setInterval`, I/O).
+
+> **Rule:** The Event Loop empties the **entire Microtask Queue** before taking a single item from the Macrotask Queue.
+
+```javascript
+console.log("1: Synchronous Start");
+
+setTimeout(() => {
+  console.log("2: Macrotask (setTimeout)");
+}, 0);
+
+Promise.resolve()
+  .then(() => {
+    console.log("3: Microtask 1 (Promise)");
+  })
+  .then(() => {
+    console.log("4: Microtask 2 (Chained Promise)");
+  });
+
+console.log("5: Synchronous End");
+
+/* Output:
+1: Synchronous Start
+5: Synchronous End
+3: Microtask 1 (Promise)
+4: Microtask 2 (Chained Promise)
+2: Macrotask (setTimeout)
+*/
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 40. What is the difference between Function Declarations, Function Expressions, and Anonymous Functions
+
+```javascript
+// 1. Function Declaration (Fully hoisted)
+console.log(add(2, 3)); // Output: 5
+function add(a, b) {
+  return a + b;
+}
+
+// 2. Function Expression (Hoisting depends on variable declaration)
+// console.log(subtract(5, 2)); // ReferenceError: Cannot access 'subtract' before initialization
+const subtract = function (a, b) {
+  return a - b;
+};
+
+// 3. Anonymous Function (Unnamed function used as an inline argument)
+const numbers = [1, 2, 3];
+const doubled = numbers.map(function (num) {
+  return num * 2;
+});
+```
+
+| Type            | Syntax                      | Hoisted?                  | Name Requirement   |
+| :-------------- | :-------------------------- | :------------------------ | :----------------- |
+| **Declaration** | `function foo() {}`         | Yes (Function Body)       | Always Named       |
+| **Expression**  | `const foo = function() {}` | No (Variable rules apply) | Named or Anonymous |
+| **Anonymous**   | `function() {}`             | No                        | Unnamed            |
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 41. What is the difference between Arrow Functions and Regular Functions
+
+Introduced in ES6, **Arrow Functions** provide a concise syntax but lack their own `this`, `arguments`, or `super` bindings.
+
+```javascript
+const obj = {
+  name: "Alice",
+
+  // Regular Function: 'this' bound dynamically at call time
+  regularFunc: function () {
+    console.log("Regular:", this.name);
+  },
+
+  // Arrow Function: 'this' inherited lexically from enclosing scope
+  arrowFunc: () => {
+    console.log("Arrow:", this.name);
+  },
+};
+
+obj.regularFunc(); // Output: Regular: Alice
+obj.arrowFunc(); // Output: Arrow: undefined (points to Window/Global)
+```
+
+| Feature                  | Regular Function                      | Arrow Function                                |
+| :----------------------- | :------------------------------------ | :-------------------------------------------- |
+| **`this` Binding**       | Dynamic (based on invocation context) | Lexical (inherits from parent scope)          |
+| **`arguments` Object**   | Available                             | Not available (use rest parameters `...args`) |
+| **Constructor Usage**    | Yes (`new Function()`)                | No (throws `TypeError`)                       |
+| **Duplicate Parameters** | Allowed in non-strict mode            | Not allowed                                   |
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 42. What is an Immediately Invoked Function Expression (IIFE) and why is it used
+
+An **IIFE** is a function that executes immediately after it is defined. It is created by wrapping a function expression in parentheses followed by an invocation operator `()`.
+
+```javascript
+// --- Standard IIFE Syntax ---
+(function () {
+  const privateSecret = "KEY_98765";
+  console.log("IIFE initialized private scope!");
+})();
+
+// console.log(privateSecret); // Throws ReferenceError
+
+// --- IIFE with parameters and encapsulation ---
+const counter = (function (start) {
+  let count = start; // Private variable
+
+  return {
+    increment() {
+      return ++count;
+    },
+    get() {
+      return count;
+    },
+  };
+})(10);
+
+console.log(counter.get()); // Output: 10
+console.log(counter.increment()); // Output: 11
+```
+
+#### Why use an IIFE?
+
+1. **Avoid Global Pollution:** Prevents declaring global variables that might conflict with other scripts.
+2. **Encapsulation:** Creates private variables via closures.
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 43. What is Currying and why is it useful
+
+**Currying** is the process of transforming a function with multiple arguments into a sequence of nesting functions, each taking a single argument.
+
+```javascript
+// Normal Function
+const normalAdd = (a, b, c) => a + b + c;
+
+// Curried Function
+const curriedAdd = (a) => (b) => (c) => a + b + c;
+
+console.log(curriedAdd(1)(2)(3)); // Output: 6
+
+// Reusability with Partial Application
+const addFive = curriedAdd(5);
+const addFiveAndTen = addFive(10);
+
+console.log(addFiveAndTen(2)); // Output: 17
+```
+
+#### Why is Currying Useful?
+
+- Enables **partial application** to reuse functions with preset configuration arguments.
+- Improves **functional composition** and modular code design.
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 44. What are Pure Functions and why are they important
+
+A **Pure Function** is a function that:
+
+1. Always returns the **same output** for the **same input** (Deterministic).
+2. Has **no side effects** (does not modify global variables, mutate arguments, or call external APIs).
+
+```javascript
+// ❌ Impure Function (Mutates external state & non-deterministic)
+let tax = 0.1;
+function calculateTotalImpure(price) {
+  return price + price * tax;
+}
+
+// ✅ Pure Function (Relies solely on arguments)
+function calculateTotalPure(price, taxRate) {
+  return price + price * taxRate;
+}
+
+console.log(calculateTotalPure(100, 0.1)); // Always returns 110
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 45. What are Higher-Order Functions and Recursive Functions
+
+#### 1. Higher-Order Functions (HOF)
+
+A **Higher-Order Function** is a function that either accepts another function as an argument, returns a function, or both.
+
+```javascript
+// Custom HOF returning a function
+function createFormatter(prefix) {
+  return function (msg) {
+    return `${prefix}:${msg}`;
+  };
+}
+
+const errorLogger = createFormatter("[ERROR]");
+console.log(errorLogger("Connection failed")); // Output: [ERROR]: Connection failed
+
+// Built-in Array HOFs: map, filter, reduce
+const numbers = [1, 2, 3, 4];
+const squared = numbers.map((n) => n * n); // Output: [1, 4, 9, 16]
+```
+
+#### 2. Recursive Functions
+
+A **Recursive Function** is a function that calls itself until it reaches a **Base Case** (stopping condition).
+
+```javascript
+function factorial(n) {
+  if (n <= 1) return 1; // Base case
+  return n * factorial(n - 1); // Recursive call
+}
+
+console.log(factorial(5)); // Output: 120
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 46. Explain Scope and Closures (Global, Block, and Lexical Scope)
+
+#### 1. Scopes in JavaScript
+
+- **Global Scope:** Variables declared outside functions/blocks, accessible anywhere.
+- **Lexical / Function Scope:** Variables declared inside a function are accessible only within that function and nested inner functions.
+- **Block Scope:** Variables declared with `let` and `const` inside `{}` are accessible only within that block.
+
+```javascript
+const globalVar = "Global";
+
+function outer() {
+  const outerVar = "Outer";
+
+  if (true) {
+    const blockVar = "Block";
+    var functionScopedVar = "Function-Scoped";
+    console.log(globalVar, outerVar, blockVar); // Accessible
+  }
+
+  // console.log(blockVar); // ReferenceError: blockVar is not defined
+  console.log(functionScopedVar); // Accessible (var ignores block scope)
+}
+```
+
+#### 2. Closures
+
+A **Closure** gives an inner function access to its outer function's scope even after the outer function has returned.
+
+```javascript
+function makeCounter() {
+  let count = 0; // Enclosed variable
+
+  return function () {
+    count++;
+    return count;
+  };
+}
+
+const counter = makeCounter();
+console.log(counter()); // Output: 1
+console.log(counter()); // Output: 2
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 47. How does the this keyword behave across different contexts
+
+The value of `this` depends on **how** a function is called at runtime:
+
+```javascript
+// 1. Global Context
+console.log(this); // In browser: Window object
+
+// 2. Object Method (Implicit Binding)
+const user = {
+  name: "Rahim",
+  greet() {
+    console.log(this.name); // 'this' refers to 'user' object
+  },
+};
+user.greet(); // Output: "Rahim"
+
+// 3. Standalone Function Call
+function show() {
+  console.log(this);
+}
+show(); // Window (or undefined in 'use strict')
+
+// 4. Constructor Function Call
+function Person(name) {
+  this.name = name; // 'this' refers to newly created instance
+}
+const p = new Person("Karim");
+console.log(p.name); // Output: "Karim"
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 48. Explain call, bind, and apply with practical use cases
+
+These explicit binding methods allow developers to specify what object `this` should refer to inside a function call.
+
+```javascript
+const person1 = { name: "Anik" };
+const person2 = { name: "Riya" };
+
+function introduce(city, country) {
+  console.log(`Hi, I'm ${this.name} from ${city},${country}.`);
+}
+
+// 1. call(): Invokes function immediately with individual arguments
+introduce.call(person1, "Dhaka", "Bangladesh");
+// Output: "Hi, I'm Anik from Dhaka, Bangladesh."
+
+// 2. apply(): Invokes function immediately with arguments in an array
+introduce.apply(person2, ["Sylhet", "Bangladesh"]);
+// Output: "Hi, I'm Riya from Sylhet, Bangladesh."
+
+// 3. bind(): Returns a new function to execute later
+const introduceAnik = introduce.bind(person1, "Dhaka");
+introduceAnik("Bangladesh");
+// Output: "Hi, I'm Anik from Dhaka, Bangladesh."
+```
+
+#### Method Comparison
+
+| Method        | Execution | Parameter Format     | Return Value          |
+| :------------ | :-------- | :------------------- | :-------------------- |
+| **`call()`**  | Immediate | Comma-separated list | Function return value |
+| **`apply()`** | Immediate | Array of values      | Function return value |
+| **`bind()`**  | Deferred  | Comma-separated list | A new bound function  |
+
+**[⬆ Back to Top](#table-of-contents)**
+
+### 49. What are Primitive and Non-Primitive Data Types in JavaScript
+
+JavaScript is dynamically typed and categorizes data into two main groups: **Primitive** types (passed by value) and **Non-Primitive / Reference** types (passed by reference).
+
+#### 1. Primitive Data Types (7 types)
+
+Stored directly in the call stack memory. Immutable by nature.
+
+- **`string`**: Textual data (`"hello"`)
+- **`number`**: Double-precision floating-point numbers (`42`, `3.14`)
+- **`boolean`**: Logical values (`true` / `false`)
+- **`undefined`**: Variable declared but not assigned a value
+- **`null`**: Intentional absence of any object value
+- **`symbol`**: Unique and immutable primitive value (ES6)
+- **`bigint`**: Arbitrary-precision integers (`9007199254740991n`)
+
+#### 2. Non-Primitive / Reference Data Types
+
+Stored in the heap memory; variables store a reference address.
+
+- **`object`**: Collections of key-value pairs (`{ key: "value" }`)
+- **`array`**: Ordered lists of values (`[1, 2, 3]`) — special subtype of `object`
+- **`function`**: Executable code blocks — callable objects
+
+```javascript
+// Checking types with typeof
+console.log(typeof "JS"); // "string"
+console.log(typeof 100); // "number"
+console.log(typeof true); // "boolean"
+console.log(typeof undefined); // "undefined"
+console.log(typeof null); // "object" (Historical JS bug!)
+console.log(typeof Symbol("id")); // "symbol"
+console.log(typeof 10n); // "bigint"
+console.log(typeof [1, 2]); // "object"
+console.log(typeof function () {}); // "function"
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 50. What is the difference between Loose Equality (==) and Strict Equality (===)
+
+| Feature           | `==` (Loose Equality)                        | `===` (Strict Equality)                      |
+| :---------------- | :------------------------------------------- | :------------------------------------------- |
+| **Type Coercion** | Performed (converts types if different)      | Not performed (strictly enforces type match) |
+| **Performance**   | Slightly slower due to conversion logic      | Faster (direct memory/type comparison)       |
+| **Best Practice** | Discouraged (leads to unexpected edge cases) | **Standard practice** for reliable code      |
+
+```javascript
+// Type Coercion Examples with ==
+console.log(5 == "5"); // true (string "5" converted to number 5)
+console.log(0 == false); // true (false coerced to 0)
+console.log("" == false); // true (empty string coerced to 0)
+console.log(null == undefined); // true (special rule in JS spec)
+
+// Strict Equality with ===
+console.log(5 === "5"); // false (Number vs String)
+console.log(0 === false); // false (Number vs Boolean)
+console.log(null === undefined); // false (Null vs Undefined)
+
+// Object Reference Comparison (Applies to both == and ===)
+console.log([] == []); // false (Different reference locations)
+console.log({} === {}); // false (Different reference locations)
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 51. What is Destructuring and how does it work in Objects and Arrays
+
+**Destructuring** is a syntax introduced in ES6 that allows extracting values from arrays or properties from objects into distinct variables.
+
+```javascript
+// --- 1. Array Destructuring ---
+const rgb = [255, 140, 0];
+
+// Basic assignment, skipping values, and default values
+const [r, g, b] = rgb;
+const [red, , blue] = rgb; // Skipping middle element
+const [primary, secondary = 0, tertiary, alpha = 1.0] = rgb; // With default value
+
+console.log(r, g, b); // Output: 255 140 0
+console.log(alpha); // Output: 1.0
+
+// --- 2. Object Destructuring ---
+const user = {
+  id: 101,
+  username: "coder_dev",
+  profile: {
+    city: "Dhaka",
+    country: "Bangladesh",
+  },
+};
+
+// Renaming variables & nested destructuring
+const {
+  username: handle,
+  profile: { city },
+} = user;
+
+console.log(handle); // Output: coder_dev
+console.log(city); // Output: Dhaka
+
+// --- 3. Function Parameter Destructuring ---
+function displayUser({ id, username }) {
+  console.log(`User ID: ${id}, Name:${username}`);
+}
+displayUser(user); // Output: User ID: 101, Name: coder_dev
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 52. How do Unary Operators, Nullish Coalescing (??), and Optional Chaining (?.) work
+
+#### 1. Unary Operators
+
+Operate on a single operand to perform conversions or mathematical operations.
+
+```javascript
+// Unary Plus (+): Converts operand to number
+console.log(+"42"); // 42 (Number)
+console.log(+true); // 1
+console.log(+"hello"); // NaN
+
+// Unary Negation (-): Converts to number and negates
+console.log(-"-10"); // 10
+
+// Logical NOT (! / !!): Converts value to boolean
+console.log(!""); // true
+console.log(!!"JS"); // true (Truthiness check)
+```
+
+#### 2. Nullish Coalescing Operator (`??`)
+
+Returns the right-hand operand only when the left-hand operand is **`null`** or **`undefined`** (unlike `||`, which triggers on all falsy values like `0`, `""`, or `false`).
+
+```javascript
+const count = 0;
+
+console.log(count || 10); // Output: 10 (0 is falsy, so it falls back)
+console.log(count ?? 10); // Output: 0  (0 is NOT null or undefined)
+
+const name = null;
+console.log(name ?? "Default Name"); // Output: Default Name
+```
+
+#### 3. Optional Chaining Operator (`?.`)
+
+Reads nested properties safely without causing a runtime `TypeError` if an intermediate reference is `null` or `undefined`.
+
+```javascript
+const user = {
+  name: "Sarah",
+  // details property is missing
+};
+
+// ❌ Without Optional Chaining: Throws TypeError
+// console.log(user.details.city);
+
+// ✅ With Optional Chaining: Evaluates safely to undefined
+console.log(user.details?.city); // Output: undefined
+
+// Calling optional methods securely
+console.log(user.getAge?.()); // Output: undefined (no error thrown)
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 53. What is Call by Value vs Call by Reference
+
+In JavaScript, variable assignment and argument passing behave differently depending on the data type:
+
+- **Primitives (Call by Value):** Values are copied directly into a new memory stack location. Modifying one copy does not affect the original.
+- **Objects / Arrays (Call by Reference):** The memory address (pointer) is copied. Both variables point to the same underlying heap object.
+
+```javascript
+// --- Call by Value (Primitives) ---
+let x = 10;
+let y = x; // Copy value
+y = 20;
+
+console.log(x); // Output: 10 (Original unaffected)
+console.log(y); // Output: 20
+
+// --- Call by Reference (Objects/Arrays) ---
+let obj1 = { name: "Tanvir" };
+let obj2 = obj1; // Copy memory reference address
+
+obj2.name = "Sumi";
+
+console.log(obj1.name); // Output: "Sumi" (Original object mutated!)
+console.log(obj2.name); // Output: "Sumi"
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 54. What is the difference between Shallow Copy and Deep Copy
+
+#### 1. Shallow Copy
+
+Copies top-level properties. However, nested objects or arrays still share references with the original object.
+
+#### 2. Deep Copy
+
+Duplicates every level of the object hierarchy, creating a completely independent copy in memory.
+
+```javascript
+const original = {
+  title: "JS Guide",
+  tags: ["code", "dev"], // Nested reference
+};
+
+// --- Shallow Copy Methods ---
+const shallow1 = { ...original };
+const shallow2 = Object.assign({}, original);
+
+shallow1.tags.push("web");
+
+console.log(original.tags); // ["code", "dev", "web"] -> Original mutated!
+
+// --- Deep Copy Methods ---
+// Modern native way (ES2022+)
+const deep1 = structuredClone(original);
+
+// Alternative JSON serialization (loses functions, Symbol, and undefined)
+const deep2 = JSON.parse(JSON.stringify(original));
+
+deep1.tags.push("deep");
+
+console.log(original.tags); // ["code", "dev", "web"] (Untouched by deep1 change)
+console.log(deep1.tags); // ["code", "dev", "web", "deep"]
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 55. What is Mutation and how do you achieve Immutability
+
+**Mutation** means modifying an existing object or array directly in memory. **Immutability** prevents modifications by creating new instances when state changes occur.
+
+```javascript
+// ❌ Mutating Approach
+const arr = [1, 2, 3];
+arr.push(4); // Mutates 'arr'
+arr.sort(); // Mutates 'arr'
+
+// ✅ Immutable Approach (Creating new copies)
+const originalArr = [1, 2, 3];
+const newArr = [...originalArr, 4]; // Spread operator creates new array
+
+console.log(originalArr); // [1, 2, 3] (Preserved)
+console.log(newArr); // [1, 2, 3, 4]
+
+// --- Preventing Mutations with Object.freeze() ---
+const config = Object.freeze({
+  apiEndpoint: "[https://api.example.com](https://api.example.com)",
+  timeout: 5000,
+});
+
+// config.timeout = 10000; // Fails silently or throws TypeError in strict mode
+console.log(config.timeout); // Output: 5000
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 56. What is the difference between for...in and for...of Loops
+
+| Feature               | `for...in`                       | `for...of`                                |
+| :-------------------- | :------------------------------- | :---------------------------------------- |
+| **Iterates Over**     | Enumerable **Keys / Indexes**    | **Values** of iterable collections        |
+| **Target Data Types** | Plain Objects, Arrays, Strings   | Arrays, Strings, Sets, Maps, NodeLists    |
+| **Use Case**          | Iterating over Object properties | Iterating through Array/Collection values |
+
+```javascript
+const items = ["Apple", "Banana", "Cherry"];
+items.customProp = "Extra"; // Custom property added to array object
+
+// --- 1. for...in (Iterates over keys/indexes) ---
+for (const index in items) {
+  console.log(index); // Output: "0", "1", "2", "customProp"
+}
+
+// --- 2. for...of (Iterates over values) ---
+for (const value of items) {
+  console.log(value); // Output: "Apple", "Banana", "Cherry"
+}
+
+// --- Iterating plain objects with for...in vs Object methods ---
+const user = { name: "Rahim", age: 25 };
+
+for (const key in user) {
+  console.log(`${key}:${user[key]}`);
+}
+
+// Preferred modern alternative for Objects:
+Object.entries(user).forEach(([key, val]) => console.log(key, val));
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 57. Essential Array & String Methods and Method Chaining
+
+#### 1. Array Iteration Methods
+
+- **`map()`**: Transforms each element and returns a **new array** of equal length.
+- **`forEach()`**: Executes a callback for each element; returns `undefined` (used for side effects).
+- **`reduce()`**: Accumulates elements into a single value (number, object, array).
+
+```javascript
+const numbers = [10, 20, 30, 40];
+
+// forEach vs map
+numbers.forEach((num) => console.log(num * 2)); // Logs values, returns undefined
+const doubled = numbers.map((num) => num * 2); // [20, 40, 60, 80]
+
+// reduce: Sum of numbers
+const totalSum = numbers.reduce((accumulator, currentValue) => {
+  return accumulator + currentValue;
+}, 0);
+
+console.log(totalSum); // Output: 100
+```
+
+#### 2. `slice()` vs `splice()`
+
+| Method                               | Purpose                          | Mutates Original? | Returns                |
+| :----------------------------------- | :------------------------------- | :---------------- | :--------------------- |
+| **`slice(start, end)`**              | Extracts a section of an array   | ❌ No             | New subarray           |
+| **`splice(start, count, ...items)`** | Adds/removes elements from array | ✅ Yes            | Array of deleted items |
+
+```javascript
+const letters = ["a", "b", "c", "d", "e"];
+
+// slice: Non-mutating
+const subSlice = letters.slice(1, 4); // Index 1 up to (not including) 4
+console.log(subSlice); // ["b", "c", "d"]
+console.log(letters); // ["a", "b", "c", "d", "e"] (Unchanged)
+
+// splice: Mutating (remove 2 items starting at index 2, insert 'X')
+const removed = letters.splice(2, 2, "X");
+console.log(removed); // ["c", "d"]
+console.log(letters); // ["a", "b", "X", "e"] (Mutated!)
+```
+
+#### 3. Method Chaining Example
+
+Combines multiple array/string operations sequentially into a clean expression.
+
+```javascript
+const products = [
+  { name: "Laptop", price: 1000, inStock: true },
+  { name: "Mouse", price: 25, inStock: false },
+  { name: "Keyboard", price: 75, inStock: true },
+  { name: "Monitor", price: 300, inStock: true },
+];
+
+// Chain filter, map, and reduce to calculate total price of in-stock items
+const totalInStockValue = products
+  .filter((item) => item.inStock) // Keep only in-stock items
+  .map((item) => item.price) // Extract prices: [1000, 75, 300]
+  .reduce((sum, price) => sum + price, 0); // Calculate sum
+
+console.log(`Total Inventory Value: $${totalInStockValue}`);
+// Output: Total Inventory Value: $1375
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+### 58. What is the difference between DOM and BOM Manipulation
+
+#### 1. DOM (Document Object Model)
+
+The **DOM** is an object-oriented representation of the HTML document structure as a tree of nodes. It allows JavaScript to modify page content, structure, and styles.
+
+#### 2. BOM (Browser Object Model)
+
+The **BOM** represents the browser environment outside of the document content itself. It includes objects like `window`, `navigator`, `screen`, `location`, and `history`.
+
+```javascript
+// --- DOM Manipulation ---
+const heading = document.createElement("h1");
+heading.textContent = "Hello World";
+heading.style.color = "blue";
+document.body.appendChild(heading);
+
+// --- BOM Manipulation ---
+console.log(`Viewport dimensions: ${window.innerWidth}x${window.innerHeight}`);
+console.log(`User Agent: ${navigator.userAgent}`);
+console.log(`Screen Resolution: ${screen.width}x${screen.height}`);
+
+// Triggering browser dialog (BOM)
+window.alert("DOM and BOM loaded successfully!");
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 59. Explain Event Mechanisms: Bubbling, Capturing, Delegation, stopPropagation, and preventDefault
+
+Events propagate through the DOM in three sequential phases:
+
+1. **Capturing Phase:** Event trickles down from the `window` to the target element.
+2. **Target Phase:** Event reaches the target element.
+3. **Bubbling Phase:** Event bubbles up from the target element back to `window`.
+
+```text
+[Window] ---> (1. Capturing) ---> [Parent] ---> [Target Element]
+[Window] <--- (3. Bubbling)  <--- [Parent] <--- (2. Target)
+```
+
+```javascript
+// --- 1. Bubbling vs Capturing ---
+const parent = document.querySelector("#parent");
+
+// Capturing listener (3rd parameter set to true)
+parent.addEventListener("click", () => console.log("Parent (Capturing)"), true);
+
+// Bubbling listener (default behavior, 3rd parameter is false)
+parent.addEventListener("click", () => console.log("Parent (Bubbling)"), false);
+
+// --- 2. stopPropagation() vs preventDefault() ---
+const link = document.querySelector("#myLink");
+
+link.addEventListener("click", (event) => {
+  event.preventDefault(); // Prevents default browser action (e.g., following URL)
+  event.stopPropagation(); // Stops event from bubbling up to parent elements
+  console.log("Link clicked safely without navigation or bubbling!");
+});
+
+// --- 3. Event Delegation ---
+// Instead of attaching listeners to every button, attach one to the parent list
+const itemContainer = document.querySelector("#itemList");
+
+itemContainer.addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON") {
+    console.log(`Clicked item with ID: ${e.target.dataset.id}`);
+  }
+});
+```
+
+#### Key Event Methods Summary
+
+- **`event.preventDefault()`**: Prevents the browser's default behavior for that event (e.g., form submit reload, link redirection).
+- **`event.stopPropagation()`**: Prevents the event from traveling further up (bubbling) or down (capturing) the DOM tree.
+- **`event.stopImmediatePropagation()`**: Prevents propagation AND stops other listeners on the _same_ element from executing.
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 60. What is the difference between Cookies, Local Storage, and Session Storage
+
+| Feature             | Cookies                                      | Local Storage                           | Session Storage             |
+| :------------------ | :------------------------------------------- | :-------------------------------------- | :-------------------------- |
+| **Capacity**        | ~4 KB                                        | ~5-10 MB                                | ~5 MB                       |
+| **Expiration**      | Set manually via `Expires` / `Max-Age`       | Never (persists until manually cleared) | On tab/window close         |
+| **Server Transfer** | Sent with every HTTP request                 | Client-side only                        | Client-side only            |
+| **Scope**           | Same Origin (accessible across tabs/windows) | Same Origin                             | Same Tab/Window session     |
+| **Access API**      | `document.cookie` (Manual string parsing)    | `window.localStorage` API               | `window.sessionStorage` API |
+
+```javascript
+// --- 1. Local Storage ---
+localStorage.setItem("theme", "dark");
+const theme = localStorage.getItem("theme");
+localStorage.removeItem("theme");
+localStorage.clear();
+
+// --- 2. Session Storage ---
+sessionStorage.setItem("activeStep", "2");
+const step = sessionStorage.getItem("activeStep");
+
+// --- 3. Cookies ---
+// Setting a cookie with HttpOnly/Secure flags is typically handled server-side
+document.cookie = "username=JohnDoe; max-age=3600; path=/; SameSite=Strict";
+console.log(document.cookie); // "username=JohnDoe"
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 61. How do Location Properties, History Access, and Page Redirection work
+
+#### 1. Location Properties (`window.location`)
+
+Provides information about the current page URL and mechanisms for page navigation.
+
+```javascript
+console.log(window.location.href); // Full URL
+console.log(window.location.hostname); // e.g., "example.com"
+console.log(window.location.pathname); // e.g., "/dashboard"
+console.log(window.location.search); // Query parameters e.g., "?id=12"
+console.log(window.location.hash); // Anchor tag e.g., "#section2"
+```
+
+#### 2. Redirection Techniques
+
+```javascript
+// Assign: Adds entry to browser history (back button works)
+window.location.assign("[https://example.com](https://example.com)");
+
+// Replace: Overwrites current history entry (back button does NOT go to previous page)
+window.location.replace("[https://example.com](https://example.com)");
+
+// Reload current page
+window.location.reload();
+```
+
+#### 3. History API (`window.history`)
+
+Manages browser session navigation, essential for Single Page Applications (SPAs).
+
+```javascript
+// Basic Navigation
+history.back(); // Equivalent to clicking Back button
+history.forward(); // Equivalent to clicking Forward button
+history.go(-2); // Move back 2 pages
+
+// SPA Routing without reloading page
+history.pushState({ page: 1 }, "Page 1", "/page1"); // Adds new entry
+history.replaceState({ page: 2 }, "Page 2", "/page2"); // Updates current entry
+
+// Listen to browser navigation changes (Back/Forward clicks)
+window.addEventListener("popstate", (event) => {
+  console.log("State changed:", event.state);
+});
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 62. How does Garbage Collection work and how do you prevent Memory Leaks
+
+JavaScript uses automatic memory management driven by Garbage Collection algorithms, primarily **Mark-and-Sweep**.
+
+#### Mark-and-Sweep Algorithm
+
+1. The engine defines a set of **roots** (e.g., global `window` object, currently executing call stack variables).
+2. It traverses all references recursively, **marking** reachable objects.
+3. Unreachable objects (not connected to roots) are **swept** (freed from memory).
+
+```text
+[Roots (Window / Stack)] ---> Accessible Object A ---> Accessible Object B
+                               Unreachable Object C (Marked for Cleanup)
+```
+
+#### Common Causes of Memory Leaks and Solutions
+
+```javascript
+// ❌ Leak 1: Accidental Global Variables
+function leak1() {
+  leakedVar = "I am attached to window!"; // Forgot 'const/let'
+}
+
+// ❌ Leak 2: Uncleared Timers
+const data = loadHugeData();
+setInterval(() => {
+  console.log(data); // 'data' cannot be garbage collected
+}, 1000);
+// ✅ Fix: Clear interval when no longer needed using clearInterval()
+
+// ❌ Leak 3: Detached DOM Nodes
+let btn = document.getElementById("button");
+document.body.removeChild(btn); // Removed from DOM
+// 'btn' variable still holds a JS reference in memory!
+// ✅ Fix: Set btn = null;
+
+// ❌ Leak 4: Forgotten Event Listeners / Closures
+const element = document.getElementById("box");
+function onClick() {
+  /* ... */
+}
+element.addEventListener("click", onClick);
+// ✅ Fix: removeEventListener("click", onClick) before destroying element
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 63. How do JS Engines optimize execution (Hidden Classes, Inline Caching, Monomorphism)
+
+Modern engines like V8 optimize dynamic JavaScript execution by applying Just-In-Time (JIT) compilation techniques.
+
+#### 1. Hidden Classes (Shapes)
+
+JavaScript is dynamically typed, but V8 creates hidden internal classes under the hood to track object shapes and property offsets in memory.
+
+```javascript
+// ✅ Good: Shared Hidden Class (Same initialization order)
+function Point(x, y) {
+  this.x = x;
+  this.y = y;
+}
+const p1 = new Point(1, 2);
+const p2 = new Point(3, 4); // Reuses the same Hidden Class as p1
+
+// ❌ Bad: Causes Hidden Class divergence
+const p3 = {};
+p3.x = 1;
+p3.y = 2;
+
+const p4 = {};
+p4.y = 2; // Different property addition order creates different hidden classes!
+p4.x = 1;
+```
+
+#### 2. Inline Caching (IC)
+
+V8 caches memory locations of object properties based on previous lookups to bypass costly property offsets search.
+
+#### 3. Monomorphic vs Polymorphic Functions
+
+- **Monomorphic:** A function always receives objects with the **exact same hidden class**. (Optimized heavily).
+- **Polymorphic:** A function receives objects with varying hidden classes (Slower due to fallback checks).
+
+```javascript
+// ✅ Monomorphic Function (Fast)
+function getX(obj) {
+  return obj.x;
+}
+getX(p1);
+getX(p2); // Passed same shape repeatedly
+
+// ❌ Avoid deleting properties at runtime
+delete p1.x; // Breaks hidden class optimization! Use p1.x = null instead.
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 64. Modern ES6+ Features and Template Literals
+
+#### 1. Template Literals & Tagged Templates
+
+Template literals support multiline strings, string interpolation, and custom parsing via tagged templates.
+
+```javascript
+// Interpolation & Expression evaluation
+const name = "Alice";
+console.log(`Hello, ${name.toUpperCase()}! 2 + 2 =${2 + 2}`);
+
+// Tagged Template Function
+function highlight(strings, ...values) {
+  return strings.reduce((acc, str, i) => {
+    const val = values[i] ? `<mark>${values[i]}</mark>` : "";
+    return `${acc}${str}${val}`;
+  }, "");
+}
+
+const item = "Laptop";
+const price = 999;
+const taggedOutput = highlight`Product: ${item}, Price:$${price}`;
+console.log(taggedOutput);
+// Output: Product: <mark>Laptop</mark>, Price: $<mark>999</mark>
+```
+
+#### 2. Syntax Enhancements (ES6+)
+
+```javascript
+// Default Parameters
+function greet(user = "Guest") {
+  return `Hi, ${user}`;
+}
+
+// Computed Property Names
+const keyName = "role";
+const userObj = {
+  id: 1,
+  [keyName]: "Admin", // Key dynamically evaluated
+};
+
+// Rest and Spread Operators
+const sumAll = (...nums) => nums.reduce((a, b) => a + b, 0); // Rest
+const arrCombined = [...[1, 2], ...[3, 4]]; // Spread
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 65. What are Web Workers and how do they enable Multithreading in JavaScript
+
+JavaScript runs on a single main thread. **Web Workers** allow running heavy background scripts in separate threads without blocking the UI/event loop.
+
+> **Note:** Web Workers do **NOT** have access to the DOM, `window`, or `document` objects. They communicate with the main thread via message passing (`postMessage`).
+
+```javascript
+// --- main.js ---
+const worker = new Worker("worker.js");
+
+// Send data to background worker thread
+worker.postMessage({ number: 40 });
+
+// Receive calculated result from worker
+worker.onmessage = function (event) {
+  console.log(`Result from worker: ${event.data}`);
+};
+
+worker.onerror = function (err) {
+  console.error("Worker error:", err.message);
+};
+
+// Terminate worker when done
+// worker.terminate();
+
+// --- worker.js (Background Thread) ---
+self.onmessage = function (event) {
+  const { number } = event.data;
+
+  // Heavy computation running in background
+  const result = fibonacci(number);
+
+  // Send result back to main thread
+  self.postMessage(result);
+};
+
+function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 66. How do Debouncing and Throttling work
+
+Both **Debouncing** and **Throttling** are rate-limiting techniques used to control how many times a high-frequency event handler executes.
+
+#### 1. Debouncing
+
+Delays execution of a function until a specified time interval has elapsed since the **last time** the event was triggered. (Ideal for search bar autocomplete).
+
+#### 2. Throttling
+
+Ensures a function executes at most **once per specified time window**, regardless of how many times the event fires. (Ideal for scroll or resize handlers).
+
+```javascript
+// --- 1. Debounce Implementation ---
+function debounce(fn, delay) {
+  let timerId;
+  return function (...args) {
+    clearTimeout(timerId); // Reset timer on each trigger
+    timerId = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+}
+
+// Usage: Search input handler
+const handleSearch = debounce((e) => {
+  console.log("Fetching API results for:", e.target.value);
+}, 300);
+
+// --- 2. Throttle Implementation ---
+function throttle(fn, limit) {
+  let inThrottle = false;
+  return function (...args) {
+    if (!inThrottle) {
+      fn.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
+
+// Usage: Window scroll listener
+window.addEventListener(
+  "scroll",
+  throttle(() => {
+    console.log("Scroll position:", window.scrollY);
+  }, 200),
+);
+```
+
+**[⬆ Back to Top](#table-of-contents)**
+
+---
+
+### 67. How do Lazy Loading Strategies work for Images and Code Modules
+
+Lazy loading delays the initialization or loading of non-critical resources until they are actually needed (e.g., when entering the viewport).
+
+#### 1. Native Image Lazy Loading (`loading="lazy"`)
+
+```html
+<!-- Native HTML attribute handled by modern browsers -->
+<img
+  src="large-banner.jpg"
+  alt="Banner"
+  loading="lazy"
+  width="800"
+  height="600"
+/>
+```
+
+#### 2. Intersection Observer API for Custom Lazy Loading
+
+```javascript
+const lazyImages = document.querySelectorAll("img.lazy");
+
+const observer = new IntersectionObserver(
+  (entries, observerInstance) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        img.src = img.dataset.src; // Replace data-src placeholder with real source
+        img.classList.remove("lazy");
+        observerInstance.unobserve(img); // Stop tracking once loaded
+      }
+    });
+  },
+  { rootMargin: "0px 0px 50px 0px" },
+);
+
+lazyImages.forEach((img) => observer.observe(img));
+```
+
+#### 3. Dynamic Code-Splitting with Imports
+
+```javascript
+const loadChartButton = document.querySelector("#loadChartBtn");
+
+loadChartButton.addEventListener("click", async () => {
+  try {
+    // Dynamic import loads JS module on demand (returns a Promise)
+    const { renderChart } = await import("./chartModule.js");
+    renderChart();
+  } catch (err) {
+    console.error("Failed to load module dynamically", err);
+  }
+});
+```
+
+**[⬆ Back to Top](#table-of-contents)**
