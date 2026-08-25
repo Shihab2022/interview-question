@@ -45,3 +45,69 @@
 // console.log("Script End");
 
 //! 6 var , let and const all those are hosted but the difference is that var is hoisted to the top of the scope and it can be accessed before it is declared but let and const are hoisted to the top of the block scope and they cannot be accessed before they are declared. If we try to access let and const before they are declared we will get a ReferenceError.
+
+// console.log("1: Synchronous Start");
+
+// setTimeout(() => {
+//   console.log("2: setTimeout Task");
+// }, 0);
+
+// Promise.resolve().then(() => {
+//   console.log("3: Promise Microtask");
+// });
+
+// console.log("4: Synchronous End");
+
+//!  this behave in normal functions arrow functions and event handlers
+// const user = {
+//   name: "Alice",
+
+//   // 1. Normal Function
+//   regularFunc: function () {
+//     console.log("Regular:", this.name);
+//   },
+
+//   // 2. Arrow Function
+//   arrowFunc: () => {
+//     console.log("Arrow:", this.name);
+//   },
+// };
+
+// user.regularFunc(); // Output: Regular: Alice
+// user.arrowFunc(); // Output: Arrow: undefined (inherits 'this' from window)
+
+// // --- 3. Event Handlers ---
+// const button = document.getElementById("myButton");
+
+// // Normal callback -> 'this' refers to the button element
+// button.addEventListener("click", function () {
+//   console.log(this); // Output: <button id="myButton">
+// });
+
+// // Arrow callback -> 'this' refers to Window/Outer scope
+// button.addEventListener("click", () => {
+//   console.log(this); // Output: Window
+//});
+
+//! bind call and apply with use cases
+
+const person = {
+  name: "Rahim",
+};
+
+function introduce(greeting, punctuation) {
+  console.log(`${greeting}, my name is ${this.name}${punctuation}`);
+}
+
+// TODO :  in the  call method the first argument is used for referencing the object after that we can pass the arguments individually .
+// 1. call(): Passes arguments individually
+introduce.call(person, "%c Hello", "!"); // Output: "Hello, my name is Rahim!"
+
+// * :  in the  apply method the first argument is used for referencing the object after that we can pass the arguments as an array .
+// 2. apply(): Passes arguments as an array
+introduce.apply(person, ["Hi", "."]); // Output: "Hi, my name is Rahim."
+
+// ? :  in the  bind method the first argument is used for referencing the object after that we can pass the arguments individually .And it returns a new function that can be invoked later with the provided arguments.
+// 3. bind(): Returns a new bound function to invoke later
+const boundFunc = introduce.bind(person, "Hey");
+boundFunc("?"); // Output: "Hey, my name is Rahim?"
