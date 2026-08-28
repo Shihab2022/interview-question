@@ -2,20 +2,6 @@
 
 > _Click &#9733; if you like the project. Your contributions are heartily ♡ welcome._
 
-<br>
-
-## Related Topics
-
-- _[HTML Basics](https://github.com/learning-zone/html-basics)_
-- _[CSS Basics](https://github.com/learning-zone/css-basics)_
-- _[JavaScript ES6 Basics](https://github.com/learning-zone/javascript-es6-basics)_
-- _[JavaScript Unit Testing](https://github.com/learning-zone/javascript-unit-testing)_
-- _[JavaScript Coding Practice](https://github.com/learning-zone/javascript-coding-practice)_
-- _[JavaScript Design Patterns](https://github.com/learning-zone/javascript-design-patterns)_
-- _[Data Structure in JavaScript](https://github.com/learning-zone/javascript-data-structure)_
-
-<br>
-
 ## Table of Contents
 
 - [Variables](#-variables)
@@ -298,7 +284,7 @@ console.log(String.raw`Hello\nworld`);
 
 `String.raw` returns a string where the escapes (`\n`, `\v`, `\t` etc.) are ignored! Backslashes can be an issue since you could end up with something like:
 
-`` const path = `C:\Documents\Projects\table.html` ``
+``const path = `C:\Documents\Projects\table.html` ``
 
 Which would result in:
 

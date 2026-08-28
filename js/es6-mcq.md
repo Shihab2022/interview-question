@@ -2,20 +2,6 @@
 
 > Scenario-based multiple choice questions covering ECMAScript 6 topics.
 
-<br>
-
-## Related Topics
-
-- _[HTML Basics](https://github.com/learning-zone/html-basics)_
-- _[CSS Basics](https://github.com/learning-zone/css-basics)_
-- _[JavaScript ES6 Basics](https://github.com/learning-zone/javascript-es6-basics)_
-- _[JavaScript Unit Testing](https://github.com/learning-zone/javascript-unit-testing)_
-- _[JavaScript Coding Practice](https://github.com/learning-zone/javascript-coding-practice)_
-- _[JavaScript Design Patterns](https://github.com/learning-zone/javascript-design-patterns)_
-- _[Data Structure in JavaScript](https://github.com/learning-zone/javascript-data-structure)_
-
-<br>
-
 ## Table of Contents
 
 - [Variables](#-1-variables)
