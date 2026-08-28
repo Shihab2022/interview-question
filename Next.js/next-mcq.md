@@ -16,7 +16,7 @@ Focus: App Router routing structure, Page vs Layout, `use client` vs `use server
 
 Focus: Data fetching strategies, Server Actions, caching behaviors, SEO via Metadata API, hydration errors.
 
-- [Data Fetching & Server Actions](#-2-data-fetching--server-actions): ISR with `revalidate`, Server Actions in forms, `cache: 'no-store'`, `generateMetadata`, hydration errors.
+- [Data Fetching &amp; Server Actions](#-2-data-fetching--server-actions): ISR with `revalidate`, Server Actions in forms, `cache: 'no-store'`, `generateMetadata`, hydration errors.
 
 ## L3: Advanced (Senior)
 
@@ -28,7 +28,7 @@ Focus: Partial Prerendering (PPR), middleware routing, Dynamic IO, security in S
 
 Focus: Multi-zone architectures, `unstable_cache` with tag-based invalidation, Edge vs Node.js runtimes, micro-frontend integrations.
 
-- [Architecture & Runtime](#-4-architecture--runtime): Multi-zone with `basePath`, `unstable_cache` tags, `revalidateTag`, Module Federation, Edge vs Node.js runtime.
+- [Architecture &amp; Runtime](#-4-architecture--runtime): Multi-zone with `basePath`, `unstable_cache` tags, `revalidateTag`, Module Federation, Edge vs Node.js runtime.
 
 <br/>
 
