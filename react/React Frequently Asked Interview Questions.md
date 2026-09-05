@@ -42,24 +42,21 @@ When used, destructuring does not modify an object or array but rather copies th
 **Example:**
 
 ```js
-/**
- * Destructuring in React
- */
-import React from "react";
-
-export default function App() {
-  // Destructuring
-  const [counter, setcounter] = React.useState(0);
-
+// Without destructuring
+function UserProfile(props) {
   return (
-    <>
-      <button onClick={() => setcounter(counter + 1)}> Increment </button>
-      <button onClick={() => setcounter(counter > 0 ? counter - 1 : 0)}>
-        Decrement
-      </button>
+    <h1>
+      {props.name} is a {props.role}
+    </h1>
+  );
+}
 
-      <h2>Result: {counter}</h2>
-    </>
+// With destructuring
+function UserProfile({ name, role }) {
+  return (
+    <h1>
+      {name} is a {role}
+    </h1>
   );
 }
 ```
